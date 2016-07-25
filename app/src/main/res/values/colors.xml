@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#4A90E2</color>
+    <color name="colorPrimaryDark">#4A90E2</color>
+    <color name="colorAccent">#FFFFFF</color>
+    <!-- color palette -->
+    <color name="blue">#4A90E2</color>
+    <color name="blue20Lighter">#7DC3FF</color>
+    <color name="pink">#F8AE9B</color>
+    <color name="pink20Lighter">#FFE1CE</color>
+    <color name="yellow">#FDCF8C</color>
+    <color name="yellow20Lighter">#FFE9A6</color>
+    <color name="purple">#8CA2D2</color>
+    <color name="purple20Lighter">#8CA2D2</color>
+    <color name="white">#FFFFFF</color>
+</resources>

@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Ultratravel</string>
+
+    <string name="action_map">Map</string>
+    <string name="action_list">List</string>
+
+    <string name="close">CLOSE</string>
+    <string name="open">OPEN</string>
+    <string name="reservation">RESERVATION</string>
+    <string name="contact">CONTACT</string>
+
+
+    <string name="ok">OK</string>
+    <string name="permission_call_rationale">Call permission is needed to allow telephone call to the business</string>
+    <string name="permision_available_call">Call Permission has been granted. Telephone call can now be made.</string>
+    <string name="permissions_not_granted">Permissions were not granted.</string>
+    <string name="no_phone_provided">No telephone number provided</string>
+    <string name="no_website_provided">No website provided</string>
+    <string name="rating_label">Ratings: %1$s</string>
+
+    <!-- content descriptors -->
+    <string name="content_descriptor_city_image">Image for the city of %1$s</string>
+    <string name="content_descriptor_city_list_image">Image of %1$s in %2$s</string>
+
+</resources>

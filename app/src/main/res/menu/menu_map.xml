@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.capstone.cudaf.ultratravel.view.CityActivity">
+    <item
+        android:id="@+id/action_map"
+        android:title="@string/action_map"
+        android:icon="@drawable/ic_map_white_48dp"
+        app:showAsAction="always" />
+</menu>
