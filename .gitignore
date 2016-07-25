@@ -34,7 +34,11 @@ captures/
 
 # Intellij
 *.iml
-.idea/workspace.xml
+.idea/*
 
 # Keystore files
 *.jks
+
+# Exclude configuration files
+app/google-services.json
+app/src/main/res/values/strings_keys.xml
