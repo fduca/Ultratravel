@@ -26,4 +26,9 @@
     <string name="content_descriptor_city_image">Image for the city of %1$s</string>
     <string name="content_descriptor_city_list_image">Image of %1$s in %2$s</string>
 
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
 </resources>

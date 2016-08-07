@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_navigation_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.capstone.cudaf.ultratravel.view.HomeActivity" android:fitsSystemWindows="true">
-
-
-
+    tools:context="com.capstone.cudaf.ultratravel.view.HomeActivity"
+    tools:showIn="@layout/app_bar_navigation_main">
     <android.support.v7.widget.RecyclerView
         android:id="@+id/messages_list"
         android:layout_width="match_parent"
@@ -14,6 +14,4 @@
         android:clipToPadding="false"
         android:scrollbars="vertical"
         tools:listitem="@layout/item_city" />
-
-
-</LinearLayout>
+</android.support.constraint.ConstraintLayout>
