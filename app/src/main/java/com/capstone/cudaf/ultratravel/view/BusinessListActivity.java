@@ -3,12 +3,9 @@ package com.capstone.cudaf.ultratravel.view;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,6 +13,7 @@ import android.view.View;
 import com.capstone.cudaf.ultratravel.R;
 import com.capstone.cudaf.ultratravel.analytics.ActionType;
 import com.capstone.cudaf.ultratravel.analytics.ViewType;
+import com.capstone.cudaf.ultratravel.contentprovider.FavouriteDataSource;
 import com.capstone.cudaf.ultratravel.model.Business;
 import com.capstone.cudaf.ultratravel.model.BusinessType;
 import com.capstone.cudaf.ultratravel.model.Coordinate;
@@ -26,14 +24,16 @@ import com.capstone.cudaf.ultratravel.view.adapter.BusinessAdapter;
 import com.capstone.cudaf.ultratravel.view.listener.OnBusinessItemListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
 @SuppressWarnings("WeakerAccess")
-public class BusinessListActivity extends UltratravelBaseActivity {
+public class BusinessListActivity extends UltratravelBaseActivity implements OnBusinessItemListener {
 
     @BindView(R.id.business_recycle_view)
     RecyclerView mRecyclerView;
@@ -43,10 +43,14 @@ public class BusinessListActivity extends UltratravelBaseActivity {
     private BusinessAdapter mBusinessAdapter;
     private BusinessType mTerm;
     private String mCity;
+    private String mType;
     private Coordinate mCityCenter;
 
     public static final String TERM_PARAM = "term";
     public static final String CITY_PARM = "city";
+    public static final String TYPE_PARAM = "type";
+
+    private FavouriteDataSource mFavouriteDataSource;
 
 
     @Override
@@ -66,6 +70,7 @@ public class BusinessListActivity extends UltratravelBaseActivity {
         Intent i = getIntent();
         mTerm = (BusinessType) i.getSerializableExtra(TERM_PARAM);
         mCity = i.getStringExtra(CITY_PARM);
+        mType = i.getStringExtra(TYPE_PARAM);
         getSupportActionBar().setTitle(mTerm.getBusinessType());
         switch (mTerm) {
             case RESTAURANT:
@@ -77,6 +82,9 @@ public class BusinessListActivity extends UltratravelBaseActivity {
             case MUSEUMS:
                 mToolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.purple));
                 break;
+            default:
+                mToolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.blue));
+                break;
         }
         initViews();
     }
@@ -84,7 +92,9 @@ public class BusinessListActivity extends UltratravelBaseActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_map, menu);
+        if (mType == null) {
+            getMenuInflater().inflate(R.menu.menu_map, menu);
+        }
         return true;
     }
 
@@ -107,7 +117,36 @@ public class BusinessListActivity extends UltratravelBaseActivity {
         mRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, getResources().getInteger(R.integer.grid_dimension));
         mRecyclerView.setLayoutManager(layoutManager);
-        loadJSON();
+        if (mType != null) {
+            getFavourites();
+        } else {
+            loadJSON();
+        }
+    }
+
+    private void getFavourites() {
+        mFavouriteDataSource = new FavouriteDataSource(this);
+        mFavouriteDataSource.open();
+        mBusiness = new ArrayList<>(mFavouriteDataSource.getAllFavourites());
+        mBusinessAdapter = new BusinessAdapter(BusinessListActivity.this,
+                mBusiness, BusinessListActivity.this);
+        mRecyclerView.setAdapter(mBusinessAdapter);
+    }
+
+    @Override
+    protected void onResume() {
+        if (mFavouriteDataSource != null) {
+            mFavouriteDataSource.open();
+        }
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        if (mFavouriteDataSource != null) {
+            mFavouriteDataSource.close();
+        }
+        super.onPause();
     }
 
 
@@ -125,21 +164,13 @@ public class BusinessListActivity extends UltratravelBaseActivity {
             public void onResponse(Call<YelpResponse> call, Response<YelpResponse> response) {
                 mBusiness = new ArrayList<>(response.body().getBusinesses());
                 mCityCenter = response.body().getRegion().getCenter();
-                mBusinessAdapter = new BusinessAdapter(BusinessListActivity.this, mBusiness, new OnBusinessItemListener() {
-                    @Override
-                    public void onBusinessItemListener(Business business) {
-                        trackAction(business.getName(), business.getBusinessType().getBusinessType(), ActionType.CLICK_BUSINESS_ITEM);
-                        Intent intent = new Intent(BusinessListActivity.this, BusinessActivity.class);
-                        intent.putExtra(BusinessActivity.BUSINESS_PARAM, business);
-                        startActivity(intent);
-                    }
-                });
+                mBusinessAdapter = new BusinessAdapter(BusinessListActivity.this,
+                        mBusiness, BusinessListActivity.this);
                 mRecyclerView.setAdapter(mBusinessAdapter);
             }
 
             @Override
             public void onFailure(Call<YelpResponse> call, Throwable t) {
-                Log.d("test", "");
             }
         });
     }
@@ -148,5 +179,12 @@ public class BusinessListActivity extends UltratravelBaseActivity {
     protected void onStart() {
         super.onStart();
         trackView(ViewType.BUSINESS_LIST_VIEW);
+    }
+
+    public void onBusinessItemListener(Business business) {
+        trackAction(business.getName(), business.getBusinessType().getBusinessType(), ActionType.CLICK_BUSINESS_ITEM);
+        Intent intent = new Intent(BusinessListActivity.this, BusinessActivity.class);
+        intent.putExtra(BusinessActivity.BUSINESS_PARAM, business);
+        startActivity(intent);
     }
 }

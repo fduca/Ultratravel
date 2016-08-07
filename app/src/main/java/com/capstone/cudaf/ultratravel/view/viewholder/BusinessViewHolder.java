@@ -34,8 +34,12 @@ public class BusinessViewHolder extends RecyclerView.ViewHolder {
         mCardView = (CardView) itemView.findViewById(R.id.business_cv);
     }
 
-    public String createOpening(boolean closed) {
-        return closed ? mItemView.getResources().getString(R.string.close) : mItemView.getResources().getString(R.string.open);
+    public String createOpening(Boolean closed) {
+        if (closed != null) {
+            return closed ? mItemView.getResources().getString(R.string.close) : mItemView.getResources().getString(R.string.open);
+        } else {
+            return mItemView.getResources().getString(R.string.na);
+        }
     }
 
     public int colorSchemeBusinessType(BusinessType businessType) {

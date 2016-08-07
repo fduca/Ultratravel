@@ -71,7 +71,7 @@ public class Business implements Serializable {
         this.image_url = image_url;
     }
 
-    public boolean is_closed() {
+    public Boolean is_closed() {
         return is_closed;
     }
 

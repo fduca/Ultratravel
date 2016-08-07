@@ -22,6 +22,7 @@ import android.view.WindowManager;
 import com.capstone.cudaf.ultratravel.R;
 import com.capstone.cudaf.ultratravel.UltratravelApplication;
 import com.capstone.cudaf.ultratravel.analytics.ActionType;
+import com.capstone.cudaf.ultratravel.model.BusinessType;
 import com.capstone.cudaf.ultratravel.model.City;
 import com.capstone.cudaf.ultratravel.utils.PicassoHelper;
 import com.capstone.cudaf.ultratravel.view.viewholder.CityViewHolder;
@@ -127,6 +128,13 @@ public class HomeActivity extends UltratravelBaseActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+        if (id == R.id.nav_favourites){
+            Intent intent = new Intent(HomeActivity.this, BusinessListActivity.class);
+            intent.putExtra(BusinessListActivity.CITY_PARM, "");
+            intent.putExtra(BusinessListActivity.TERM_PARAM, BusinessType.FAVOURITES);
+            intent.putExtra(BusinessListActivity.TYPE_PARAM, "favourites");
+            startActivity(intent);
+        }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;

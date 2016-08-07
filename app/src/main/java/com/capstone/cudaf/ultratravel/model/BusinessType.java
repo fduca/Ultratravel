@@ -3,7 +3,9 @@ package com.capstone.cudaf.ultratravel.model;
 public enum BusinessType {
     RESTAURANT("Restaurants"),
     HOTELS("Hotels"),
-    MUSEUMS("Museums");
+    MUSEUMS("Museums"),
+    FAVOURITES("Favourites");
+
     private final String businessType;
 
     BusinessType(String businessType) {
