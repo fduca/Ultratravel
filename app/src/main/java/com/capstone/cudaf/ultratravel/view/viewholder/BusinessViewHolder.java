@@ -34,16 +34,6 @@ public class BusinessViewHolder extends RecyclerView.ViewHolder {
         mCardView = (CardView) itemView.findViewById(R.id.business_cv);
     }
 
-
-    public String createAddress(Location location) {
-        StringBuilder builder = new StringBuilder();
-        if (location.getDisplay_address() != null && location.getDisplay_address().size() > 0) {
-            builder.append(location.getDisplay_address().get(0)).append(", ");
-        }
-        builder.append(location.getCity());
-        return builder.toString();
-    }
-
     public String createOpening(boolean closed) {
         return closed ? mItemView.getResources().getString(R.string.close) : mItemView.getResources().getString(R.string.open);
     }

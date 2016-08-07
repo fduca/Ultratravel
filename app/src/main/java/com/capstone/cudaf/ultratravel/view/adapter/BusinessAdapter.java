@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import com.capstone.cudaf.ultratravel.R;
 import com.capstone.cudaf.ultratravel.model.Business;
 import com.capstone.cudaf.ultratravel.utils.PicassoHelper;
+import com.capstone.cudaf.ultratravel.utils.ViewFieldHelper;
 import com.capstone.cudaf.ultratravel.view.listener.OnBusinessItemListener;
 import com.capstone.cudaf.ultratravel.view.viewholder.BusinessViewHolder;
 
@@ -39,7 +40,7 @@ public class BusinessAdapter extends RecyclerView.Adapter<BusinessViewHolder> {
     public void onBindViewHolder(BusinessViewHolder holder, int position) {
         final Business b = mBusinesses.get(position);
         holder.mBusinessName.setText(mBusinesses.get(position).getName());
-        holder.mBusinessAddress.setText(holder.createAddress(b.getLocation()));
+        holder.mBusinessAddress.setText(ViewFieldHelper.createAddress(b.getLocation()));
         holder.mBusinessRatings.setText(b.getRating());
         PicassoHelper.picassoImageFromString(mContext, holder.mBusinessImage, b.getImage_url());
         holder.mBusinessImage.setContentDescription( b.getName());

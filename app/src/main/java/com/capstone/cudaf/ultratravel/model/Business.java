@@ -5,6 +5,7 @@ import java.util.List;
 
 public class Business implements Serializable {
 
+    private transient int id;
     private String name;
     private String rating;
     private Location location;
@@ -13,6 +14,14 @@ public class Business implements Serializable {
     private String image_url;
     private Boolean is_closed;
     private String mobile_url;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;

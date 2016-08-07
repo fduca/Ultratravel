@@ -17,6 +17,10 @@
     <string name="no_phone_provided">No telephone number provided</string>
     <string name="no_website_provided">No website provided</string>
     <string name="rating_label">Ratings: %1$s</string>
+    <string name="saved_favourite">Saved into your favourites!</string>
+    <string name="failed_saved_favourite">There was a problem saving into your favourite, please try later</string>
+    <string name="removed_favourite">Successfully removed favourite!</string>
+    <string name="failed_removed_favourite">There was a problem removing your favourite, please try later</string>
 
     <!-- content descriptors -->
     <string name="content_descriptor_city_image">Image for the city of %1$s</string>

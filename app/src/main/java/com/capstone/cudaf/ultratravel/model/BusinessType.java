@@ -14,4 +14,13 @@ public enum BusinessType {
         return this.businessType;
     }
 
+    public static BusinessType getBusinessTypeFromString(String type){
+        for (BusinessType business: BusinessType.values()){
+            if (business.getBusinessType().equals(type)){
+                return business;
+            }
+        }
+        return null;
+    }
+
 }

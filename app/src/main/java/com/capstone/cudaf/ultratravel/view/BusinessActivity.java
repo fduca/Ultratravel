@@ -3,6 +3,7 @@ package com.capstone.cudaf.ultratravel.view;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -11,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -25,7 +27,10 @@ import android.widget.Toast;
 import com.capstone.cudaf.ultratravel.R;
 import com.capstone.cudaf.ultratravel.analytics.ActionType;
 import com.capstone.cudaf.ultratravel.analytics.ViewType;
+import com.capstone.cudaf.ultratravel.contentprovider.FavouriteDataSource;
+import com.capstone.cudaf.ultratravel.contentprovider.FavouriteSQLiteHelper;
 import com.capstone.cudaf.ultratravel.model.Business;
+import com.capstone.cudaf.ultratravel.utils.ViewFieldHelper;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -54,9 +59,14 @@ public class BusinessActivity extends UltratravelBaseActivity implements Activit
     Business mSelectedBusiness;
     @BindView(R.id.coordinator)
     CoordinatorLayout mCoordinatorLayout;
+    @BindView(R.id.favourite_button)
+    FloatingActionButton mFavouriteButton;
+    boolean isFavourite;
+
     private static final int REQUEST_CALL_PHONE = 0;
 
     public static final String BUSINESS_PARAM = "business";
+    private FavouriteDataSource mFavouriteDataSource;
 
 
     @Override
@@ -64,6 +74,8 @@ public class BusinessActivity extends UltratravelBaseActivity implements Activit
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_business);
         ButterKnife.bind(this);
+        mFavouriteDataSource = new FavouriteDataSource(this);
+        mFavouriteDataSource.open();
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -76,7 +88,13 @@ public class BusinessActivity extends UltratravelBaseActivity implements Activit
         Intent i = getIntent();
         mSelectedBusiness = (Business) i.getSerializableExtra(BUSINESS_PARAM);
         if (mSelectedBusiness != null) {
+            isFavourite = isFavourite();
             applyBusinessColor();
+            if (isFavourite){
+                mFavouriteButton.setBackgroundTintList(
+                        ColorStateList.valueOf(ContextCompat.getColor(BusinessActivity.this, R.color.blue)));
+
+            }
             populateView();
             setButtonListener();
         }
@@ -111,6 +129,41 @@ public class BusinessActivity extends UltratravelBaseActivity implements Activit
                 }
             }
         });
+        mFavouriteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isFavourite) {
+                    removeFavourite();
+                } else {
+                    addFavourite();
+                }
+
+            }
+        });
+    }
+
+    private void addFavourite() {
+        Business favourite = mFavouriteDataSource.createFavourite(mSelectedBusiness);
+        if (favourite!= null) {
+            isFavourite = true;
+            mFavouriteButton.setBackgroundTintList(
+                    ColorStateList.valueOf(ContextCompat.getColor(BusinessActivity.this, R.color.blue)));
+            Toast.makeText(getApplicationContext(), getString(R.string.saved_favourite), Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getApplicationContext(), getString(R.string.failed_saved_favourite), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void removeFavourite() {
+        boolean result = mFavouriteDataSource.deleteFavourite(mSelectedBusiness);
+        if (result){
+            isFavourite = false;
+            applyBusinessColor();
+            Toast.makeText(getApplicationContext(), getString(R.string.removed_favourite), Toast.LENGTH_SHORT).show();
+        } else {
+            isFavourite = true;
+            Toast.makeText(getApplicationContext(), getString(R.string.failed_removed_favourite), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void applyBusinessColor() {
@@ -118,20 +171,45 @@ public class BusinessActivity extends UltratravelBaseActivity implements Activit
             case RESTAURANT:
                 mReservationBusiness.setBackgroundColor(ContextCompat.getColor(this, R.color.pink));
                 mContactBusiness.setBackgroundColor(ContextCompat.getColor(this, R.color.pink20Lighter));
+                if (!isFavourite) {
+                    mFavouriteButton.setBackgroundTintList(
+                            ColorStateList.valueOf(ContextCompat.getColor(this, R.color.pink)));
+                }
                 break;
             case HOTELS:
                 mReservationBusiness.setBackgroundColor(ContextCompat.getColor(this, R.color.yellow));
                 mContactBusiness.setBackgroundColor(ContextCompat.getColor(this, R.color.yellow20Lighter));
+                if (!isFavourite) {
+                    mFavouriteButton.setBackgroundTintList(
+                            ColorStateList.valueOf(ContextCompat.getColor(this, R.color.yellow)));
+                }
                 break;
             case MUSEUMS:
                 mReservationBusiness.setBackgroundColor(ContextCompat.getColor(this, R.color.purple));
                 mContactBusiness.setBackgroundColor(ContextCompat.getColor(this, R.color.purple20Lighter));
+                if (!isFavourite) {
+                    mFavouriteButton.setBackgroundTintList(
+                            ColorStateList.valueOf(ContextCompat.getColor(this, R.color.purple)));
+                }
                 break;
             default:
                 mReservationBusiness.setBackgroundColor(ContextCompat.getColor(this, R.color.blue));
                 mContactBusiness.setBackgroundColor(ContextCompat.getColor(this, R.color.blue20Lighter));
+                if (!isFavourite) {
+                    mFavouriteButton.setBackgroundTintList(
+                            ColorStateList.valueOf(ContextCompat.getColor(this, R.color.blue)));
+                }
                 break;
         }
+    }
+
+    private boolean isFavourite() {
+        Business business = mFavouriteDataSource.getFavouriteByNameAndCity(mSelectedBusiness.getName(), mSelectedBusiness.getLocation().getCity());
+        if (business!= null){
+            mSelectedBusiness.setId(business.getId());
+            return true;
+        }
+        return  false;
     }
 
     private void populateView() {
@@ -161,21 +239,8 @@ public class BusinessActivity extends UltratravelBaseActivity implements Activit
             mNameBusiness.setText(mSelectedBusiness.getName());
             mRatingBusiness.setText(getString(R.string.rating_label, mSelectedBusiness.getRating()));
             mAddressBusiness.setText(mSelectedBusiness.getLocation().getDisplay_address().toString());
-            mCategoryBusiness.setText(generateCategory(mSelectedBusiness.getCategories()));
+            mCategoryBusiness.setText(ViewFieldHelper.generateCategory(mSelectedBusiness.getCategories()));
         }
-    }
-
-    private String generateCategory(List<List<String>> categories) {
-        StringBuilder category = new StringBuilder();
-        if (categories != null && !categories.isEmpty()) {
-            for (List<String> catList : categories) {
-                if (category.length() > 0) {
-                    category.append(" > ");
-                }
-                category.append(catList.get(0));
-            }
-        }
-        return category.toString();
     }
 
     private void requestCallPermission() {
@@ -214,6 +279,18 @@ public class BusinessActivity extends UltratravelBaseActivity implements Activit
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        mFavouriteDataSource.open();
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        mFavouriteDataSource.close();
+        super.onPause();
     }
 
     @Override
