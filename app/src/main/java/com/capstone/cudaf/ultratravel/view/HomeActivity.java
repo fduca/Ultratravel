@@ -26,6 +26,7 @@ import com.capstone.cudaf.ultratravel.model.BusinessType;
 import com.capstone.cudaf.ultratravel.model.City;
 import com.capstone.cudaf.ultratravel.utils.PicassoHelper;
 import com.capstone.cudaf.ultratravel.view.viewholder.CityViewHolder;
+import com.capstone.cudaf.ultratravel.widget.FavouriteListProvider;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -129,7 +130,7 @@ public class HomeActivity extends UltratravelBaseActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         if (id == R.id.nav_favourites){
-            Intent intent = new Intent(HomeActivity.this, BusinessListActivity.class);
+            Intent intent = new Intent(HomeActivity.this, FavouriteListActivity.class);
             intent.putExtra(BusinessListActivity.CITY_PARM, "");
             intent.putExtra(BusinessListActivity.TERM_PARAM, BusinessType.FAVOURITES);
             intent.putExtra(BusinessListActivity.TYPE_PARAM, "favourites");

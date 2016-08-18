@@ -1,8 +1,12 @@
 package com.capstone.cudaf.ultratravel.view;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -13,10 +17,13 @@ import android.view.View;
 import com.capstone.cudaf.ultratravel.R;
 import com.capstone.cudaf.ultratravel.analytics.ActionType;
 import com.capstone.cudaf.ultratravel.analytics.ViewType;
-import com.capstone.cudaf.ultratravel.contentprovider.FavouriteDataSource;
 import com.capstone.cudaf.ultratravel.model.Business;
 import com.capstone.cudaf.ultratravel.model.BusinessType;
 import com.capstone.cudaf.ultratravel.model.Coordinate;
+import com.capstone.cudaf.ultratravel.model.Hotel;
+import com.capstone.cudaf.ultratravel.model.Location;
+import com.capstone.cudaf.ultratravel.model.Museum;
+import com.capstone.cudaf.ultratravel.model.Restaurant;
 import com.capstone.cudaf.ultratravel.model.YelpResponse;
 import com.capstone.cudaf.ultratravel.service.BusinessService;
 import com.capstone.cudaf.ultratravel.service.BusinessServiceGenerator;
@@ -25,6 +32,7 @@ import com.capstone.cudaf.ultratravel.view.listener.OnBusinessItemListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -39,18 +47,16 @@ public class BusinessListActivity extends UltratravelBaseActivity implements OnB
     RecyclerView mRecyclerView;
     @BindView(R.id.id_toolbar)
     Toolbar mToolbar;
-    private ArrayList<Business> mBusiness;
-    private BusinessAdapter mBusinessAdapter;
+    protected ArrayList<Business> mBusiness;
+    protected BusinessAdapter mBusinessAdapter;
     private BusinessType mTerm;
     private String mCity;
-    private String mType;
+    protected String mType;
     private Coordinate mCityCenter;
 
     public static final String TERM_PARAM = "term";
     public static final String CITY_PARM = "city";
     public static final String TYPE_PARAM = "type";
-
-    private FavouriteDataSource mFavouriteDataSource;
 
 
     @Override
@@ -113,41 +119,13 @@ public class BusinessListActivity extends UltratravelBaseActivity implements OnB
         return super.onOptionsItemSelected(item);
     }
 
-    private void initViews() {
+    protected void initViews() {
         mRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, getResources().getInteger(R.integer.grid_dimension));
         mRecyclerView.setLayoutManager(layoutManager);
-        if (mType != null) {
-            getFavourites();
-        } else {
-            loadJSON();
-        }
+        loadJSON();
     }
 
-    private void getFavourites() {
-        mFavouriteDataSource = new FavouriteDataSource(this);
-        mFavouriteDataSource.open();
-        mBusiness = new ArrayList<>(mFavouriteDataSource.getAllFavourites());
-        mBusinessAdapter = new BusinessAdapter(BusinessListActivity.this,
-                mBusiness, BusinessListActivity.this);
-        mRecyclerView.setAdapter(mBusinessAdapter);
-    }
-
-    @Override
-    protected void onResume() {
-        if (mFavouriteDataSource != null) {
-            mFavouriteDataSource.open();
-        }
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        if (mFavouriteDataSource != null) {
-            mFavouriteDataSource.close();
-        }
-        super.onPause();
-    }
 
 
     private void loadJSON() {

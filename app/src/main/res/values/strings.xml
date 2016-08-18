@@ -8,7 +8,9 @@
     <string name="na">N/A</string>
     <string name="open">OPEN</string>
     <string name="reservation">RESERVATION</string>
+    <string name="reservation_content_description">Make a reservation</string>
     <string name="contact">CONTACT</string>
+    <string name="contact_content_description">Contact business</string>
 
 
     <string name="ok">OK</string>
@@ -21,6 +23,7 @@
     <string name="saved_favourite">Saved into your favourites!</string>
     <string name="failed_saved_favourite">There was a problem saving into your favourite, please try later</string>
     <string name="removed_favourite">Successfully removed favourite!</string>
+    <string name="something_wrong_favourites">Something went wrong :( Try again later</string>
     <string name="failed_removed_favourite">There was a problem removing your favourite, please try later</string>
 
     <!-- content descriptors -->

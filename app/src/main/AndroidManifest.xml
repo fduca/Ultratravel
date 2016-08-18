@@ -36,6 +36,9 @@
         <activity
             android:name=".view.BusinessListActivity"
             android:theme="@style/AppTheme" />
+        <activity
+            android:name=".view.FavouriteListActivity"
+            android:theme="@style/AppTheme" />
         <activity android:name=".view.BusinessMapsActivity" />
         <activity android:name=".view.BusinessActivity" />
         <!--
@@ -49,7 +52,10 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
-
+        <provider
+            android:name=".contentprovider.FavouriteContentProvider"
+            android:authorities="com.capstone.cudaf.ultratravel.contentprovider" >
+        </provider>
         <receiver android:name=".widget.UltratravelWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

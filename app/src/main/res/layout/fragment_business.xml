@@ -8,11 +8,11 @@
         android:id="@+id/category_business"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="20dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginEnd="@dimen/fragment_margin"
+        android:layout_marginStart="@dimen/fragment_margin"
+        android:layout_marginTop="@dimen/fragment_half_margin"
         android:textColor="@color/white"
-        android:textSize="12sp"
+        android:textSize="@dimen/font_size_small"
         android:textStyle="normal" />
 
     <TextView
@@ -20,11 +20,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/category_business"
-        android:layout_marginEnd="20dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginEnd="@dimen/fragment_margin"
+        android:layout_marginStart="@dimen/fragment_margin"
+        android:layout_marginTop="@dimen/fragment_half_margin"
         android:textColor="@color/white"
-        android:textSize="24sp"
+        android:textSize="@dimen/font_size_medium"
         android:textStyle="normal" />
 
     <TextView
@@ -32,9 +32,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/name_business"
-        android:layout_marginEnd="20dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginEnd="@dimen/fragment_margin"
+        android:layout_marginStart="@dimen/fragment_margin"
+        android:layout_marginTop="@dimen/fragment_half_margin"
         android:textColor="#E6E9ED"
         android:textSize="14sp"
         android:textStyle="normal" />
@@ -44,10 +44,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/rating_business"
-        android:layout_marginStart="20dp"
+        android:layout_marginStart="@dimen/fragment_margin"
         android:layout_marginTop="5dp"
         android:lineSpacingExtra="5dp"
-        android:textColor="#E6E9ED"
+        android:textColor="@color/text_address"
         android:textSize="14sp"
         android:textStyle="normal" />
 
@@ -57,28 +57,30 @@
         android:layout_below="@id/address_business"
         android:layout_marginEnd="2dp"
         android:layout_marginStart="2dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="@dimen/fragment_half_margin"
         android:orientation="horizontal"
         android:weightSum="2">
 
         <Button
             android:id="@+id/reservation_business"
             android:layout_width="match_parent"
-            android:layout_height="75dp"
+            android:layout_height="@dimen/fragment_xl_margin"
             android:layout_marginEnd="2dp"
             android:layout_weight="1"
             android:text="@string/reservation"
             android:clickable="true"
             style="?android:attr/buttonBarButtonStyle"
+            android:contentDescription="@string/reservation_content_description"
             android:textColor="@color/white" />
 
         <Button
             android:id="@+id/contact_business"
             android:layout_width="match_parent"
-            android:layout_height="75dp"
+            android:layout_height="@dimen/fragment_xl_margin"
             android:layout_weight="1"
             style="?android:attr/buttonBarButtonStyle"
             android:clickable="true"
+            android:contentDescription="@string/contact_content_description"
             android:text="@string/contact"
             android:textColor="@color/white" />
     </LinearLayout>

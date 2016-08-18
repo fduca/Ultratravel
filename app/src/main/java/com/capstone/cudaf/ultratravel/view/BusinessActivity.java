@@ -1,22 +1,28 @@
 package com.capstone.cudaf.ultratravel.view;
 
 import android.Manifest;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.database.Cursor;
+import android.database.SQLException;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
@@ -27,20 +33,19 @@ import android.widget.Toast;
 import com.capstone.cudaf.ultratravel.R;
 import com.capstone.cudaf.ultratravel.analytics.ActionType;
 import com.capstone.cudaf.ultratravel.analytics.ViewType;
-import com.capstone.cudaf.ultratravel.contentprovider.FavouriteDataSource;
 import com.capstone.cudaf.ultratravel.contentprovider.FavouriteSQLiteHelper;
+import com.capstone.cudaf.ultratravel.contentprovider.UltratravelContentObserver;
 import com.capstone.cudaf.ultratravel.model.Business;
 import com.capstone.cudaf.ultratravel.utils.ViewFieldHelper;
+import com.capstone.cudaf.ultratravel.view.listener.OnSQLDataChangedListener;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
-
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 @SuppressWarnings("WeakerAccess")
-public class BusinessActivity extends UltratravelBaseActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
+public class BusinessActivity extends UltratravelBaseActivity implements ActivityCompat.OnRequestPermissionsResultCallback, LoaderManager.LoaderCallbacks<Cursor>, OnSQLDataChangedListener {
 
     @BindView(R.id.id_toolbar)
     Toolbar mToolbar;
@@ -62,23 +67,23 @@ public class BusinessActivity extends UltratravelBaseActivity implements Activit
     @BindView(R.id.favourite_button)
     FloatingActionButton mFavouriteButton;
     boolean isFavourite;
+    private UltratravelContentObserver mContentObserver;
 
     private static final int REQUEST_CALL_PHONE = 0;
+    private static final int LOADER_ID = 0x02;
 
     public static final String BUSINESS_PARAM = "business";
-    private FavouriteDataSource mFavouriteDataSource;
-
+    private static final Uri URI_FAVOURITE = Uri.parse("content://com.capstone.cudaf.ultratravel.contentprovider/favourites/item");
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_business);
         ButterKnife.bind(this);
-        mFavouriteDataSource = new FavouriteDataSource(this);
-        mFavouriteDataSource.open();
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
+        mContentObserver = new UltratravelContentObserver(new Handler(), this);
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -88,16 +93,28 @@ public class BusinessActivity extends UltratravelBaseActivity implements Activit
         Intent i = getIntent();
         mSelectedBusiness = (Business) i.getSerializableExtra(BUSINESS_PARAM);
         if (mSelectedBusiness != null) {
-            isFavourite = isFavourite();
             applyBusinessColor();
-            if (isFavourite){
-                mFavouriteButton.setBackgroundTintList(
-                        ColorStateList.valueOf(ContextCompat.getColor(BusinessActivity.this, R.color.blue)));
-
-            }
             populateView();
             setButtonListener();
         }
+        getSupportLoaderManager().initLoader(LOADER_ID, null, this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getContentResolver().
+                registerContentObserver(
+                        URI_FAVOURITE,
+                        true,
+                        mContentObserver);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        getContentResolver().
+                unregisterContentObserver(mContentObserver);
     }
 
     private void setButtonListener() {
@@ -143,24 +160,28 @@ public class BusinessActivity extends UltratravelBaseActivity implements Activit
     }
 
     private void addFavourite() {
-        Business favourite = mFavouriteDataSource.createFavourite(mSelectedBusiness);
-        if (favourite!= null) {
-            isFavourite = true;
-            mFavouriteButton.setBackgroundTintList(
-                    ColorStateList.valueOf(ContextCompat.getColor(BusinessActivity.this, R.color.blue)));
-            Toast.makeText(getApplicationContext(), getString(R.string.saved_favourite), Toast.LENGTH_SHORT).show();
-        } else {
+        ContentValues values = new ContentValues();
+        values.put(FavouriteSQLiteHelper.COLUMN_FAVOURITE_NAME, mSelectedBusiness.getName());
+        values.put(FavouriteSQLiteHelper.COLUMN_FAVOURITE_RATINGS, mSelectedBusiness.getRating());
+        values.put(FavouriteSQLiteHelper.COLUMN_FAVOURITE_LOCATION_ADDRESS, mSelectedBusiness.getLocation().getDisplay_address().toString().replace("[", "").replace("]", ""));
+        values.put(FavouriteSQLiteHelper.COLUMN_FAVOURITE_LOCATION_SHORT_ADDRESS, mSelectedBusiness.getLocation().getDisplay_address().get(0));
+        values.put(FavouriteSQLiteHelper.COLUMN_FAVOURITE_LOCATION_CITY, mSelectedBusiness.getLocation().getCity());
+        values.put(FavouriteSQLiteHelper.COLUMN_FAVOURITE_CATEGORY, ViewFieldHelper.generateCategory(mSelectedBusiness.getCategories()));
+        values.put(FavouriteSQLiteHelper.COLUMN_FAVOURITE_PHONE, mSelectedBusiness.getDisplay_phone());
+        values.put(FavouriteSQLiteHelper.COLUMN_FAVOURITE_IMAGE, mSelectedBusiness.getImage_url());
+        values.put(FavouriteSQLiteHelper.COLUMN_FAVOURITE_MOBILE_URL, mSelectedBusiness.getMobile_url());
+        values.put(FavouriteSQLiteHelper.COLUMN_FAVOURITE_TYPE, mSelectedBusiness.getBusinessType().getBusinessType());
+        try {
+            getContentResolver().insert(URI_FAVOURITE, values);
+        } catch (SQLException exception) {
             Toast.makeText(getApplicationContext(), getString(R.string.failed_saved_favourite), Toast.LENGTH_SHORT).show();
         }
     }
 
     private void removeFavourite() {
-        boolean result = mFavouriteDataSource.deleteFavourite(mSelectedBusiness);
-        if (result){
-            isFavourite = false;
-            applyBusinessColor();
-            Toast.makeText(getApplicationContext(), getString(R.string.removed_favourite), Toast.LENGTH_SHORT).show();
-        } else {
+        try {
+            getContentResolver().delete(URI_FAVOURITE, null, new String[]{"" + mSelectedBusiness.getId()});
+        } catch (SQLException exception) {
             isFavourite = true;
             Toast.makeText(getApplicationContext(), getString(R.string.failed_removed_favourite), Toast.LENGTH_SHORT).show();
         }
@@ -203,22 +224,13 @@ public class BusinessActivity extends UltratravelBaseActivity implements Activit
         }
     }
 
-    private boolean isFavourite() {
-        Business business = mFavouriteDataSource.getFavouriteByNameAndCity(mSelectedBusiness.getName(), mSelectedBusiness.getLocation().getCity());
-        if (business!= null){
-            mSelectedBusiness.setId(business.getId());
-            return true;
-        }
-        return  false;
-    }
-
     private void populateView() {
         if (mSelectedBusiness != null) {
             Target target = new Target() {
                 @Override
                 public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                    if (findViewById(R.id.image_business)!= null){
-                        ((ImageView)findViewById(R.id.image_business)).setBackground(new BitmapDrawable(getResources(), bitmap));
+                    if (findViewById(R.id.image_business) != null) {
+                        ((ImageView) findViewById(R.id.image_business)).setBackground(new BitmapDrawable(getResources(), bitmap));
                     } else {
                         mToolbar.setBackground(new BitmapDrawable(getResources(), bitmap));
                     }
@@ -281,21 +293,60 @@ public class BusinessActivity extends UltratravelBaseActivity implements Activit
         }
     }
 
-    @Override
-    protected void onResume() {
-        mFavouriteDataSource.open();
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        mFavouriteDataSource.close();
-        super.onPause();
-    }
 
     @Override
     protected void onStart() {
         super.onStart();
         trackView(ViewType.BUSINESS_DETAIL_VIEW);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        switch (id) {
+            case LOADER_ID:
+                return new CursorLoader(
+                        this,
+                        URI_FAVOURITE,
+                        null, null, new String[]{mSelectedBusiness.getName(), mSelectedBusiness.getLocation().getCity()}, null);
+            default:
+                // An invalid id was passed in
+                return null;
+        }
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        isFavourite = false;
+        data.moveToFirst();
+        while (!data.isAfterLast()) {
+            mSelectedBusiness.setId(data.getInt(0));
+            isFavourite = true;
+            mFavouriteButton.setBackgroundTintList(
+                    ColorStateList.valueOf(ContextCompat.getColor(BusinessActivity.this, R.color.blue)));
+            data.moveToNext();
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
+
+    @Override
+    public void updateUI(Uri uri) {
+        long result = ContentUris.parseId(uri);
+        if (result > 0) {
+            isFavourite = !isFavourite;
+            if (isFavourite) {
+                mFavouriteButton.setBackgroundTintList(
+                        ColorStateList.valueOf(ContextCompat.getColor(BusinessActivity.this, R.color.blue)));
+                Toast.makeText(getApplicationContext(), getString(R.string.saved_favourite), Toast.LENGTH_SHORT).show();
+            } else {
+                applyBusinessColor();
+                Toast.makeText(getApplicationContext(), getString(R.string.removed_favourite), Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(getApplicationContext(), getString(R.string.something_wrong_favourites), Toast.LENGTH_SHORT).show();
+        }
     }
 }

@@ -3,36 +3,33 @@ package com.capstone.cudaf.ultratravel.widget;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Binder;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
 import com.capstone.cudaf.ultratravel.R;
-import com.capstone.cudaf.ultratravel.contentprovider.FavouriteDataSource;
 import com.capstone.cudaf.ultratravel.model.Business;
+import com.capstone.cudaf.ultratravel.utils.SQLToObjectHelper;
 import com.capstone.cudaf.ultratravel.view.BusinessActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by cudaf on 08/08/2016.
- */
 
 public class FavouriteListProvider implements RemoteViewsService.RemoteViewsFactory {
 
     private Context ctxt = null;
     private int appWidgetId;
-    private FavouriteDataSource mFavouriteDataSource;
-    List<Business> mBusiness;
+    List<Business> mBusiness = new ArrayList<>();
+
+    private static final int LOADER_ID = 0x03;
 
     public FavouriteListProvider(Context ctxt, Intent intent) {
         this.ctxt = ctxt;
         appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                 AppWidgetManager.INVALID_APPWIDGET_ID);
-        mFavouriteDataSource = new FavouriteDataSource(ctxt);
-        mFavouriteDataSource.open();
-        mBusiness = new ArrayList<>(mFavouriteDataSource.getAllFavourites());
     }
 
     @Override
@@ -41,7 +38,7 @@ public class FavouriteListProvider implements RemoteViewsService.RemoteViewsFact
 
     @Override
     public void onDestroy() {
-        mFavouriteDataSource.close();
+
     }
 
     @Override
@@ -84,6 +81,29 @@ public class FavouriteListProvider implements RemoteViewsService.RemoteViewsFact
 
     @Override
     public void onDataSetChanged() {
-        // no-op
+        // Revert back to our process' identity so we can work with our content provider
+        long identityToken = Binder.clearCallingIdentity();
+        try {
+            // Query the message list
+            Cursor listCursor = ctxt.getContentResolver().query(Uri.parse("content://com.capstone.cudaf.ultratravel.contentprovider/favourites"),
+                    null, null, null, null);
+            if (listCursor != null) {
+                try {
+                    listCursor.moveToFirst();
+                    while (!listCursor.isAfterLast()) {
+                        mBusiness.add(SQLToObjectHelper.cursorToBusiness(listCursor));
+                        listCursor.moveToNext();
+                    }
+                } finally {
+                    listCursor.close();
+                }
+            }
+        } finally {
+            // Restore the identity - not sure if it's needed since we're going to return right here, but
+            // it just *seems* cleaner
+            Binder.restoreCallingIdentity(identityToken);
+        }
+
     }
+
 }

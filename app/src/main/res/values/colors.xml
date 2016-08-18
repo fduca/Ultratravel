@@ -13,4 +13,5 @@
     <color name="purple">#8CA2D2</color>
     <color name="purple20Lighter">#8CA2D2</color>
     <color name="white">#FFFFFF</color>
+    <color name="text_address">#E6E9ED</color>
 </resources>
